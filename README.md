@@ -1,11 +1,11 @@
-# HealthChecks
+# HealthChecks-External
 
-[![NPM](https://nodei.co/npm/healthchecks.png?compact=true)](https://nodei.co/npm/healthchecks/)
+[![NPM](https://nodei.co/npm/healthchecks-external.png?compact=true)](https://nodei.co/npm/healthchecks-external/)
 
-[![Downloads per month](https://img.shields.io/npm/dm/healthchecks.svg?maxAge=2592000)](https://www.npmjs.org/package/healthchecks)
-[![npm version](https://img.shields.io/npm/v/healthchecks.svg)](https://www.npmjs.org/package/healthchecks)
-[![Build Status](https://travis-ci.org/x42en/healthchecks.svg?branch=master)](https://travis-ci.org/x42en/healthchecks)
-[![Known Vulnerabilities](https://snyk.io/test/github/x42en/healthchecks/badge.svg)](https://snyk.io/test/github/x42en/healthchecks)
+[![Downloads per month](https://img.shields.io/npm/dm/healthchecks-external.svg?maxAge=2592000)](https://www.npmjs.org/package/healthchecks-external)
+[![npm version](https://img.shields.io/npm/v/healthchecks-external.svg)](https://www.npmjs.org/package/healthchecks-external)
+[![Build Status](https://travis-ci.org/x42en/healthchecks-external.svg?branch=master)](https://travis-ci.org/x42en/healthchecks-external)
+[![Known Vulnerabilities](https://snyk.io/test/github/x42en/healthchecks-external/badge.svg)](https://snyk.io/test/github/x42en/healthchecks-external)
 
 
 
@@ -13,14 +13,14 @@
 
 Install with npm:
   ```bash
-    npm install healthchecks
+    npm install healthchecks-external
   ```
   
 ## Basic Usage
 
 Require the module:
   ```coffeescript
-  HealthChecks = require 'healthChecks'
+  HealthChecks = require 'healthChecks-external'
   ```
 
 Start using HealthChecks...

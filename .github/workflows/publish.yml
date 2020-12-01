@@ -24,7 +24,7 @@ jobs:
     - run: npm test
       env:
         CI: true
-  
+
   publish:
     name: Publish to NPM & GitHub Package Registry
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
         uses: EndBug/version-check@master
         id: check
         with:
-          file-url: https://unpkg.com/healthchecks@latest/package.json
+          file-url: https://unpkg.com/healthchecks-external@latest/package.json
           static-checking: localIsNew
 
       - name: Version update detected
