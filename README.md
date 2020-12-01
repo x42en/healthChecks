@@ -38,13 +38,13 @@ Start using HealthChecks...
 ## Supported methods
 
 Several checks are available:  
-* [https://github.com/x42en/healthchecks#addprofile](addProfile)
-* [https://github.com/x42en/healthchecks#checkPortIsOpen](checkPortIsOpen)
-* [https://github.com/x42en/healthchecks#checkCertificateIssuer](checkCertificateIssuer)
-* [https://github.com/x42en/healthchecks#checkCertificateExpiration](checkCertificateExpiration)
-* [https://github.com/x42en/healthchecks#checkAPICallContent](checkAPICallContent)
-* [https://github.com/x42en/healthchecks#checkWebPageContent](checkWebPageContent)
-* [https://github.com/x42en/healthchecks#checkClientAuthentication](checkClientAuthentication)
+* [addProfile](https://github.com/x42en/healthchecks#addprofile)
+* [checkPortIsOpen](https://github.com/x42en/healthchecks#checkPortIsOpen)
+* [checkCertificateIssuer](https://github.com/x42en/healthchecks#checkCertificateIssuer)
+* [checkCertificateExpiration](https://github.com/x42en/healthchecks#checkCertificateExpiration)
+* [checkAPICallContent](https://github.com/x42en/healthchecks#checkAPICallContent)
+* [checkWebPageContent](https://github.com/x42en/healthchecks#checkWebPageContent)
+* [checkClientAuthentication](https://github.com/x42en/healthchecks#checkClientAuthentication)
 
 ### addProfile
 Add a complete TLS/SSL profile, useful for requests against client authentified endpoints.  
