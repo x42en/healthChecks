@@ -1,0 +1,128 @@
+name: auto-publish
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build: 
+    name: Build and Test package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@master
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@master
+      with:
+        node-version: ${{ matrix.node-version }}
+        registry-url: https://npm.pkg.github.com/
+        scope: '@x42en'
+    - run: npm install
+    - run: npm run build --if-present
+    - run: npm test
+      env:
+        CI: true
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  build: 
+    name: Build and Test package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@master
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@master
+      with:
+        node-version: ${{ matrix.node-version }}
+        registry-url: https://npm.pkg.github.com/
+        scope: '@x42en'
+    - run: npm install
+    - run: npm run build --if-present
+    - run: npm test
+      env:
+        CI: true
+
+  publish:
+    name: Publish to NPM & GitHub Package Registry
+    runs-on: ubuntu-latest
+    if: contains(
+          'refs/heads/master
+          refs/heads/develop'
+        , github.ref) # Publish it only if the push comes from the master or develop branch
+    needs: build # We need to wait for the build to be committed before publishing
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@master
+        with:
+          ref: master
+
+      - name: Check version changes
+        uses: EndBug/version-check@master
+        id: check
+        with:
+          file-url: https://unpkg.com/ioserver@latest/package.json
+          static-checking: localIsNew
+
+      - name: Version update detected
+        if: steps.check.outputs.changed == 'true'
+        run: 'echo "Version change found! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
+      
+      - name: Push tag version
+        if: steps.check.outputs.changed == 'true'
+        uses: mathieudutour/github-tag-action@v5
+        with:
+          custom_tag: ${{ steps.check.outputs.version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create a GitHub release
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/create-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+
+      - name: Set up Node.js for NPM
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-node@master
+        with:
+          registry-url: "https://registry.npmjs.org"
+          scope: "@x62en"
+
+      - name: Install dependencies
+        if: steps.check.outputs.changed == 'true'
+        run: npm install --only=prod
+
+      - name: Publish package to NPM
+        if: steps.check.outputs.changed == 'true'
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Set up Node.js for GPR
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-node@master
+        with:
+          registry-url: "https://npm.pkg.github.com/"
+          scope: "@x42en"
+
+      - name: Set up package for GPR
+        if: steps.check.outputs.changed == 'true'
+        run: npm run gpr-setup
+
+      - name: Publish package to GPR
+        if: steps.check.outputs.changed == 'true'
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
