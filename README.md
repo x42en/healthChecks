@@ -38,13 +38,13 @@ Start using HealthChecks...
 ## Supported methods
 
 Several checks are available:  
-* addProfile
-* checkPortIsOpen
-* checkCertificateIssuer
-* checkCertificateExpiration
-* checkAPICallContent
-* checkWebPageContent
-* checkClientAuthentication
+* [https://github.com/x42en/healthchecks#addprofile](addProfile)
+* [https://github.com/x42en/healthchecks#checkPortIsOpen](checkPortIsOpen)
+* [https://github.com/x42en/healthchecks#checkCertificateIssuer](checkCertificateIssuer)
+* [https://github.com/x42en/healthchecks#checkCertificateExpiration](checkCertificateExpiration)
+* [https://github.com/x42en/healthchecks#checkAPICallContent](checkAPICallContent)
+* [https://github.com/x42en/healthchecks#checkWebPageContent](checkWebPageContent)
+* [https://github.com/x42en/healthchecks#checkClientAuthentication](checkClientAuthentication)
 
 ### addProfile
 Add a complete TLS/SSL profile, useful for requests against client authentified endpoints.  
