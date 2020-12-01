@@ -43,8 +43,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+          tag_name: ${{ steps.check.outputs.version }}
+          release_name: Release ${{ steps.check.outputs.version }}
           body: ${{ steps.tag_version.outputs.changelog }}
 
       - name: Set up Node.js for NPM
