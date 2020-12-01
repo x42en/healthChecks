@@ -20,7 +20,7 @@ Install with npm:
 
 Require the module:
   ```coffeescript
-  HealthChecks = require 'healthChecks-external'
+  HealthChecks = require 'healthChecksExternal'
   ```
 
 Start using HealthChecks...
@@ -38,13 +38,13 @@ Start using HealthChecks...
 ## Supported methods
 
 Several checks are available:  
-* [addProfile](https://github.com/x42en/healthChecks#addprofile)
-* [checkPortIsOpen](https://github.com/x42en/healthChecks#checkPortIsOpen)
-* [checkCertificateIssuer](https://github.com/x42en/healthChecks#checkCertificateIssuer)
-* [checkCertificateExpiration](https://github.com/x42en/healthChecks#checkCertificateExpiration)
-* [checkAPICallContent](https://github.com/x42en/healthChecks#checkAPICallContent)
-* [checkWebPageContent](https://github.com/x42en/healthChecks#checkWebPageContent)
-* [checkClientAuthentication](https://github.com/x42en/healthChecks#checkClientAuthentication)
+* [addProfile](https://github.com/x42en/healthChecks-external#addprofile)
+* [checkPortIsOpen](https://github.com/x42en/healthChecks-external#checkPortIsOpen)
+* [checkCertificateIssuer](https://github.com/x42en/healthChecks-external#checkCertificateIssuer)
+* [checkCertificateExpiration](https://github.com/x42en/healthChecks-external#checkCertificateExpiration)
+* [checkAPICallContent](https://github.com/x42en/healthChecks-external#checkAPICallContent)
+* [checkWebPageContent](https://github.com/x42en/healthChecks-external#checkWebPageContent)
+* [checkClientAuthentication](https://github.com/x42en/healthChecks-external#checkClientAuthentication)
 
 ### addProfile
 Add a complete TLS/SSL profile, useful for requests against client authentified endpoints.  
@@ -113,7 +113,7 @@ npm run build
 
 ### Publish
 
-The NPM publishing is automated, just commit (or better merge) into master in order to publish corresponding package in NPM and GitHub repositories.
+The NPM publishing is automated, just merge PR from develop into master in order to publish corresponding package in NPM and GitHub repositories.
 
 ## TODO
 * write better doc
