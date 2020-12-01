@@ -44,7 +44,7 @@ jobs:
         uses: EndBug/version-check@master
         id: check
         with:
-          file-url: https://unpkg.com/ioserver@latest/package.json
+          file-url: https://unpkg.com/healthchecks@latest/package.json
           static-checking: localIsNew
 
       - name: Version update detected
