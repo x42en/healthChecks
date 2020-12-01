@@ -20,6 +20,7 @@ jobs:
         registry-url: https://npm.pkg.github.com/
         scope: '@x42en'
     - run: npm install
+    - run: npm install snyk
     - run: npm run build --if-present
     - run: npm test
       env:
