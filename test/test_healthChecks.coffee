@@ -89,15 +89,19 @@ describe "HealthChecks working tests", ->
         data.should.be.a 'string'
         data.should.be.equal server_expiration
     
-    # it 'Check API call method', ->
-    #     data = await healthChecks.checkAPICallContent( 'https://my-json-server.typicode.com/x42en/healthchecks/posts/1', 'GET' )
-    #     data.should.be.an 'object'
-    #     data.should.have.deep.property 'status'
-    #     data.should.have.deep.property 'data'
+    it 'Check API call method', ->
+        data = await healthChecks.checkAPICallContent( 'https://my-json-server.typicode.com/x42en/healthchecks/posts/1', 'GET' )
+        data.should.be.an 'object'
+        data.should.have.deep.property 'status'
+        data.should.have.deep.property 'data'
         
-    #     data.status.should.be.equal 200
-    #     data.data.should.be.and 'object'
-    #     data.should.be.equal {id: 1, title: 'hello'}
+        data.status.should.be.equal 200
+        data.data.should.be.an 'object'
+        data.data.should.have.deep.property 'id'
+        data.data.should.have.deep.property 'title'
+        
+        data.data.id.should.be.equal 1
+        data.data.title.should.be.equal 'hello'
     
     it 'Check web page content method', ->
         data = await healthChecks.checkWebPageContent( 'https://api.ipify.org/' )
