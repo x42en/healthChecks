@@ -1,6 +1,6 @@
 {
   "name": "healthchecks-external",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Minimal server health checks framework",
   "main": "build/healthChecksExternal.js",
   "files": [
@@ -11,7 +11,10 @@
   },
   "scripts": {
     "build": "./node_modules/coffeescript/bin/coffee --no-header --map --output build/ --compile src/",
-    "test": "mocha --exit"
+    "test": "mocha --exit",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect",
+    "gpr-setup": "node scripts/gpr.js"
   },
   "repository": {
     "type": "git",
@@ -41,7 +44,8 @@
     "chai": "^4.2.0",
     "coffeescript": "^2.5.1",
     "mocha": "^8.2.1",
-    "mocha-suppress-logs": "^0.2.0"
+    "mocha-suppress-logs": "^0.2.0",
+    "snyk": "^1.432.1"
   },
   "snyk": true
 }
