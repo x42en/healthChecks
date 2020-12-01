@@ -202,3 +202,6 @@ GitHub.sublime-settings
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/node,macos,linux,vscode,sublimetext,npm
+
+# Remove test certs
+test/certs

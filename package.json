@@ -2,12 +2,12 @@
   "name": "healthchecks",
   "version": "1.0.0",
   "description": "Minimal server health checks framework",
-  "main": "dist/healthChecks.js",
+  "main": "build/healthChecks.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "build": "./node_modules/coffeescript/bin/coffee --no-header --map --output dist/ --compile src/",
+    "build": "./node_modules/coffeescript/bin/coffee --no-header --map --output build/ --compile src/",
     "test": "mocha --exit"
   },
   "repository": {
@@ -28,10 +28,13 @@
     "url": "https://github.com/x42en/healthChecks/issues"
   },
   "homepage": "https://github.com/x42en/healthChecks#readme",
-  "dependencies": {},
+  "dependencies": {
+    "axios": "^0.21.0"
+  },
   "devDependencies": {
     "chai": "^4.2.0",
     "coffeescript": "^2.5.1",
-    "mocha": "^8.2.1"
+    "mocha": "^8.2.1",
+    "mocha-suppress-logs": "^0.2.0"
   }
 }
