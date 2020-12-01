@@ -22,8 +22,8 @@
     "supervision",
     "x42en"
   ],
-  "author": "bmz",
-  "license": "MIT",
+  "author": "Ben Mz",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/x42en/healthChecks/issues"
   },
