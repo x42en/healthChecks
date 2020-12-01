@@ -1,8 +1,8 @@
 {
-  "name": "healthchecks",
+  "name": "healthchecks-external",
   "version": "1.0.0",
   "description": "Minimal server health checks framework",
-  "main": "build/healthChecks.js",
+  "main": "build/healthChecksExternal.js",
   "directories": {
     "test": "test"
   },
@@ -12,7 +12,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/x42en/healthChecks.git"
+    "url": "git+https://github.com/x42en/healthChecks-external.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   },
   "keywords": [
     "nodejs",
@@ -25,9 +28,9 @@
   "author": "Ben Mz",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/x42en/healthChecks/issues"
+    "url": "https://github.com/x42en/healthChecks-external/issues"
   },
-  "homepage": "https://github.com/x42en/healthChecks#readme",
+  "homepage": "https://github.com/x42en/healthChecks-external#readme",
   "dependencies": {
     "axios": "^0.21.0"
   },
@@ -36,5 +39,6 @@
     "coffeescript": "^2.5.1",
     "mocha": "^8.2.1",
     "mocha-suppress-logs": "^0.2.0"
-  }
+  },
+  "snyk": true
 }

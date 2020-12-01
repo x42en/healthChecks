@@ -1,11 +1,11 @@
-# HealthChecks
+# HealthChecks-External
 
-[![NPM](https://nodei.co/npm/healthchecks.png?compact=true)](https://nodei.co/npm/healthchecks/)
+[![NPM](https://nodei.co/npm/healthchecks-external.png?compact=true)](https://nodei.co/npm/healthchecks-external/)
 
-[![Downloads per month](https://img.shields.io/npm/dm/healthchecks.svg?maxAge=2592000)](https://www.npmjs.org/package/healthchecks)
-[![npm version](https://img.shields.io/npm/v/healthchecks.svg)](https://www.npmjs.org/package/healthchecks)
-[![Build Status](https://travis-ci.org/x42en/healthchecks.svg?branch=master)](https://travis-ci.org/x42en/healthchecks)
-[![Known Vulnerabilities](https://snyk.io/test/github/x42en/healthchecks/badge.svg)](https://snyk.io/test/github/x42en/healthchecks)
+[![Downloads per month](https://img.shields.io/npm/dm/healthchecks-external.svg?maxAge=2592000)](https://www.npmjs.org/package/healthchecks-external)
+[![npm version](https://img.shields.io/npm/v/healthchecks-external.svg)](https://www.npmjs.org/package/healthchecks-external)
+[![Build Status](https://travis-ci.org/x42en/healthchecks-external.svg?branch=master)](https://travis-ci.org/x42en/healthchecks-external)
+[![Known Vulnerabilities](https://snyk.io/test/github/x42en/healthchecks-external/badge.svg)](https://snyk.io/test/github/x42en/healthchecks-external)
 
 
 
@@ -13,14 +13,14 @@
 
 Install with npm:
   ```bash
-    npm install healthchecks
+    npm install healthchecks-external
   ```
   
 ## Basic Usage
 
 Require the module:
   ```coffeescript
-  HealthChecks = require 'healthChecks'
+  HealthChecks = require 'healthChecksExternal'
   ```
 
 Start using HealthChecks...
@@ -38,13 +38,13 @@ Start using HealthChecks...
 ## Supported methods
 
 Several checks are available:  
-* [addProfile](https://github.com/x42en/healthChecks#addprofile)
-* [checkPortIsOpen](https://github.com/x42en/healthChecks#checkPortIsOpen)
-* [checkCertificateIssuer](https://github.com/x42en/healthChecks#checkCertificateIssuer)
-* [checkCertificateExpiration](https://github.com/x42en/healthChecks#checkCertificateExpiration)
-* [checkAPICallContent](https://github.com/x42en/healthChecks#checkAPICallContent)
-* [checkWebPageContent](https://github.com/x42en/healthChecks#checkWebPageContent)
-* [checkClientAuthentication](https://github.com/x42en/healthChecks#checkClientAuthentication)
+* [addProfile](https://github.com/x42en/healthChecks-external#addprofile)
+* [checkPortIsOpen](https://github.com/x42en/healthChecks-external#checkPortIsOpen)
+* [checkCertificateIssuer](https://github.com/x42en/healthChecks-external#checkCertificateIssuer)
+* [checkCertificateExpiration](https://github.com/x42en/healthChecks-external#checkCertificateExpiration)
+* [checkAPICallContent](https://github.com/x42en/healthChecks-external#checkAPICallContent)
+* [checkWebPageContent](https://github.com/x42en/healthChecks-external#checkWebPageContent)
+* [checkClientAuthentication](https://github.com/x42en/healthChecks-external#checkClientAuthentication)
 
 ### addProfile
 Add a complete TLS/SSL profile, useful for requests against client authentified endpoints.  
@@ -113,7 +113,7 @@ npm run build
 
 ### Publish
 
-The NPM publishing is automated, just commit (or better merge) into master in order to publish corresponding package in NPM and GitHub repositories.
+The NPM publishing is automated, just merge PR from develop into master in order to publish corresponding package in NPM and GitHub repositories.
 
 ## TODO
 * write better doc

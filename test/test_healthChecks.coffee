@@ -7,7 +7,7 @@ suppressLogs = require 'mocha-suppress-logs'
 
 # Import test requirements
 Server  = require "#{__dirname}/tlsServer"
-Checker = require '../build/healthChecks'
+Checker = require '../build/healthChecksExternal'
 
 # Allow self-signed for dev purpose
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
