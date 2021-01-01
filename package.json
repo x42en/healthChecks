@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/x42en/healthChecks-external#readme",
   "dependencies": {
-    "axios": "^0.21.0"
+    "axios": "^0.21.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
