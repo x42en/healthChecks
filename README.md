@@ -20,7 +20,7 @@ Install with npm:
 
 Require the module:
   ```coffeescript
-  HealthChecks = require 'healthChecksExternal'
+  HealthChecks = require 'healthchecks-external'
   ```
 
 Start using HealthChecks...
@@ -38,13 +38,24 @@ Start using HealthChecks...
 ## Supported methods
 
 Several checks are available:  
-* [addProfile](https://github.com/x42en/healthChecks-external#addprofile)
-* [checkPortIsOpen](https://github.com/x42en/healthChecks-external#checkPortIsOpen)
-* [checkCertificateIssuer](https://github.com/x42en/healthChecks-external#checkCertificateIssuer)
-* [checkCertificateExpiration](https://github.com/x42en/healthChecks-external#checkCertificateExpiration)
-* [checkAPICallContent](https://github.com/x42en/healthChecks-external#checkAPICallContent)
-* [checkWebPageContent](https://github.com/x42en/healthChecks-external#checkWebPageContent)
-* [checkClientAuthentication](https://github.com/x42en/healthChecks-external#checkClientAuthentication)
+- [HealthChecks-External](#healthchecks-external)
+  - [Install](#install)
+  - [Basic Usage](#basic-usage)
+  - [Supported methods](#supported-methods)
+    - [addProfile](#addprofile)
+    - [checkPortIsOpen](#checkportisopen)
+    - [checkPortLatency](#checkportlatency)
+    - [checkCertificateDN](#checkcertificatedn)
+    - [checkCertificateIssuer](#checkcertificateissuer)
+    - [checkCertificateExpiration](#checkcertificateexpiration)
+    - [checkAPICallContent](#checkapicallcontent)
+    - [checkWebPageContent](#checkwebpagecontent)
+    - [checkClientAuthentication](#checkclientauthentication)
+  - [Developers](#developers)
+    - [Run tests](#run-tests)
+    - [Compilation](#compilation)
+    - [Publish](#publish)
+  - [TODO](#todo)
 
 ### addProfile
 Add a complete TLS/SSL profile, useful for requests against client authentified endpoints.  
@@ -62,6 +73,16 @@ A profile object is composed with:
 Verify that a remote TCP port is open.  
 **Args:** `host` (string), `port` (number)  
 **Return:** boolean
+
+### checkPortLatency
+Verify latency of a remote TCP port (in ms).  
+**Args:** `host` (string), `port` (number)  
+**Return:** boolean
+
+### checkCertificateDN
+Verify DN of remote peer certificate.  
+**Args:** `host` (string), `port` (number) [, `profile_name` (string)] 
+**Return:** array of `issuer` (string)
 
 ### checkCertificateIssuer
 Verify ~~complete~~ chain of remote peer certificate issuers.  

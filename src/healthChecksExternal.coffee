@@ -20,13 +20,16 @@ module.exports = class HealthChecks
             throw error
         
         return true
+    
+    isProfileSet: (name) ->
+        return @config.profiles[name]?
 
     # Check if remote port is open
     _checkPort: (host, port) ->
         return new Promise (resolve, reject) =>
             # Check port is reachable
             net_socket = net.Socket()
-
+            now = new Date().getTime()
             onError = () =>
                 net_socket.destroy()
                 reject Error host
@@ -37,7 +40,11 @@ module.exports = class HealthChecks
             .connect( port, host, () =>
                 # Auto close socket
                 net_socket.end()
-                resolve()
+                console.log "Socket connected"
+                console.log now
+                latency = (new Date().getTime()) - now
+                console.log latency
+                resolve(latency)
             )
     
     # Retrieve remote peer certificate
@@ -52,24 +59,22 @@ module.exports = class HealthChecks
                 config.cert = @config.profiles[profile_name].cert
                 config.ca = @config.profiles[profile_name].ca
             
+            cert = null
             tlsSocket = tls.connect config, () =>
-                # Give some time for certificate retrieval
-                setTimeout( =>
-                    tlsSocket.end()
-                , 100)
+                cert = tlsSocket.getPeerCertificate(true)
+                tlsSocket.end()
             
             .setEncoding 'utf8'
+            .on 'data', () =>
+                resolve cert
             .on 'error', (error) =>
-                reject Error error
-            .on 'data', (data) =>
-                resolve tlsSocket.getPeerCertificate(true)
+                reject Error(error)
     
     # Execute web request upon host
     _request: (url, method, data, profile_name, json=false) ->
         if method not in ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS']
             throw 'Sorry, unsupported method'
 
-        console.log "#{method} #{url}"
         config = {
             url: url
             method: method
@@ -90,13 +95,35 @@ module.exports = class HealthChecks
         
 
     # Check if a service port is open
-    # Return boolean()
+    # Return Boolean()
     checkPortIsOpen: (host, port) ->
         port_status = @_checkPort host, port
         await port_status.then () ->
             return true
         .catch ( error ) ->
             return false
+    
+    # Check latency of a service port
+    # Return Number()
+    checkPortLatency: (host, port) ->
+        port_status = @_checkPort host, port
+        await port_status.then (latency) ->
+            return latency
+        .catch ( error ) ->
+            return -1
+
+    # Gather remote peer certificate's DN
+    checkCertificateDN: (host, port, profile_name=null) ->
+        tls_infos = @_checkTLS host, port, profile_name
+        await tls_infos.then (infos) ->
+            # Rebuild DN
+            dn = ''
+            for k, v of infos.subject
+                dn += "#{k}=#{v},"
+            
+            return dn.slice(0, -1)
+        .catch ( error ) ->
+            return Error error
 
     # Gather remote peer certificate's issuer
     checkCertificateIssuer: (host, port, profile_name=null) ->
@@ -145,12 +172,12 @@ module.exports = class HealthChecks
     # Check if remote site has client authentication enforced
     # return boolean()
     checkClientAuthentication: (host, port) ->
+        # Try a connection without profile
         tls_infos = @_checkTLS host, port
-        await tls_infos.then (infos) ->
+        await tls_infos.then () ->
             # If can connect without certs
             return false
         .catch ( error ) ->
-            console.log error
             return true
 
     # Retrieve vulnerabilities based on app/version infos
