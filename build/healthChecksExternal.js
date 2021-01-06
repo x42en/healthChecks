@@ -64,7 +64,7 @@
       // Retrieve remote peer certificate
     _checkTLS(host, port, profile_name) {
       return new Promise((resolve, reject) => {
-        var cert, config, tlsSocket;
+        var cert, config, isAuthorized, tlsSocket;
         config = {
           host: host,
           port: port
@@ -75,12 +75,16 @@
           config.ca = this.config.profiles[profile_name].ca;
         }
         cert = null;
+        isAuthorized = false;
         return tlsSocket = tls.connect(config, () => {
           cert = tlsSocket.getPeerCertificate(true);
-          return tlsSocket.end();
-        }).setEncoding('utf8').on('data', () => {
-          return resolve(cert);
-        }).on('error', (error) => {
+          isAuthorized = tlsSocket.authorized;
+          tlsSocket.end();
+          return resolve({
+            authorized: isAuthorized,
+            certificate: cert
+          });
+        }).setEncoding('utf8').on('error', (error) => {
           return reject(Error(error));
         });
       });
@@ -145,7 +149,7 @@
         var dn, k, ref, v;
         // Rebuild DN
         dn = '';
-        ref = infos.subject;
+        ref = infos.certificate.subject;
         for (k in ref) {
           v = ref[k];
           dn += `${k}=${v},`;
@@ -166,7 +170,7 @@
         
         // Rebuild DN
         dn = '';
-        ref = infos.issuer;
+        ref = infos.certificate.issuer;
         for (k in ref) {
           v = ref[k];
           dn += `${k}=${v},`;
@@ -188,7 +192,7 @@
       var tls_infos;
       tls_infos = this._checkTLS(host, port, profile_name);
       return (await tls_infos.then(function(infos) {
-        return infos.valid_to;
+        return infos.certificate.valid_to;
       }).catch(function(error) {
         return Error(error);
       }));
@@ -230,11 +234,11 @@
       var tls_infos;
       // Try a connection without profile
       tls_infos = this._checkTLS(host, port);
-      return (await tls_infos.then(function() {
-        // If can connect without certs
-        return false;
+      return (await tls_infos.then(function(infos) {
+        // Return if can connect without certs
+        return !infos.authorized;
       }).catch(function(error) {
-        return true;
+        return Error(err);
       }));
     }
 

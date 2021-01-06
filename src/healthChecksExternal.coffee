@@ -57,13 +57,13 @@ module.exports = class HealthChecks
                 config.ca = @config.profiles[profile_name].ca
             
             cert = null
+            isAuthorized = false
             tlsSocket = tls.connect config, () =>
                 cert = tlsSocket.getPeerCertificate(true)
+                isAuthorized = tlsSocket.authorized
                 tlsSocket.end()
-            
+                resolve { authorized: isAuthorized, certificate: cert }
             .setEncoding 'utf8'
-            .on 'data', () =>
-                resolve cert
             .on 'error', (error) =>
                 reject Error(error)
     
@@ -115,7 +115,7 @@ module.exports = class HealthChecks
         await tls_infos.then (infos) ->
             # Rebuild DN
             dn = ''
-            for k, v of infos.subject
+            for k, v of infos.certificate.subject
                 dn += "#{k}=#{v},"
             
             return dn.slice(0, -1)
@@ -130,7 +130,7 @@ module.exports = class HealthChecks
             
             # Rebuild DN
             dn = ''
-            for k, v of infos.issuer
+            for k, v of infos.certificate.issuer
                 dn += "#{k}=#{v},"
             
             # Add issuer to list
@@ -145,7 +145,7 @@ module.exports = class HealthChecks
     checkCertificateExpiration: (host, port, profile_name=null) ->
         tls_infos = @_checkTLS host, port, profile_name
         await tls_infos.then (infos) ->
-            return infos.valid_to
+            return infos.certificate.valid_to
         .catch ( error ) ->
             return Error error
     
@@ -171,11 +171,11 @@ module.exports = class HealthChecks
     checkClientAuthentication: (host, port) ->
         # Try a connection without profile
         tls_infos = @_checkTLS host, port
-        await tls_infos.then () ->
-            # If can connect without certs
-            return false
+        await tls_infos.then (infos) ->
+            # Return if can connect without certs
+            return (not infos.authorized)
         .catch ( error ) ->
-            return true
+            return Error err
 
     # Retrieve vulnerabilities based on app/version infos
     # Based on vulners.io service (use config for API key)
