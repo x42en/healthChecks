@@ -35,20 +35,30 @@
       return true;
     }
 
+    isProfileSet(name) {
+      return this.config.profiles[name] != null;
+    }
+
     // Check if remote port is open
     _checkPort(host, port) {
       return new Promise((resolve, reject) => {
-        var net_socket, onError;
+        var net_socket, now, onError;
         // Check port is reachable
         net_socket = net.Socket();
+        now = new Date().getTime();
         onError = () => {
           net_socket.destroy();
           return reject(Error(host));
         };
         return net_socket.setTimeout(1000).once('error', onError).once('timeout', onError).connect(port, host, () => {
+          var latency;
           // Auto close socket
           net_socket.end();
-          return resolve();
+          console.log("Socket connected");
+          console.log(now);
+          latency = (new Date().getTime()) - now;
+          console.log(latency);
+          return resolve(latency);
         });
       });
     }
@@ -57,7 +67,7 @@
       // Retrieve remote peer certificate
     _checkTLS(host, port, profile_name) {
       return new Promise((resolve, reject) => {
-        var config, tlsSocket;
+        var cert, config, tlsSocket;
         config = {
           host: host,
           port: port
@@ -67,15 +77,14 @@
           config.cert = this.config.profiles[profile_name].cert;
           config.ca = this.config.profiles[profile_name].ca;
         }
+        cert = null;
         return tlsSocket = tls.connect(config, () => {
-          // Give some time for certificate retrieval
-          return setTimeout(() => {
-            return tlsSocket.end();
-          }, 100);
-        }).setEncoding('utf8').on('error', (error) => {
+          cert = tlsSocket.getPeerCertificate(true);
+          return tlsSocket.end();
+        }).setEncoding('utf8').on('data', () => {
+          return resolve(cert);
+        }).on('error', (error) => {
           return reject(Error(error));
-        }).on('data', (data) => {
-          return resolve(tlsSocket.getPeerCertificate(true));
         });
       });
     }
@@ -87,7 +96,6 @@
       if (method !== 'GET' && method !== 'POST' && method !== 'PUT' && method !== 'DELETE' && method !== 'HEAD' && method !== 'OPTIONS') {
         throw 'Sorry, unsupported method';
       }
-      console.log(`${method} ${url}`);
       config = {
         url: url,
         method: method,
@@ -108,7 +116,7 @@
 
     
       // Check if a service port is open
-    // Return boolean()
+    // Return Boolean()
     async checkPortIsOpen(host, port) {
       var port_status;
       port_status = this._checkPort(host, port);
@@ -116,6 +124,38 @@
         return true;
       }).catch(function(error) {
         return false;
+      }));
+    }
+
+    
+      // Check latency of a service port
+    // Return Number()
+    async checkPortLatency(host, port) {
+      var port_status;
+      port_status = this._checkPort(host, port);
+      return (await port_status.then(function(latency) {
+        return latency;
+      }).catch(function(error) {
+        return -1;
+      }));
+    }
+
+    // Gather remote peer certificate's DN
+    async checkCertificateDN(host, port, profile_name = null) {
+      var tls_infos;
+      tls_infos = this._checkTLS(host, port, profile_name);
+      return (await tls_infos.then(function(infos) {
+        var dn, k, ref, v;
+        // Rebuild DN
+        dn = '';
+        ref = infos.subject;
+        for (k in ref) {
+          v = ref[k];
+          dn += `${k}=${v},`;
+        }
+        return dn.slice(0, -1);
+      }).catch(function(error) {
+        return Error(error);
       }));
     }
 
@@ -191,12 +231,12 @@
     // return boolean()
     async checkClientAuthentication(host, port) {
       var tls_infos;
+      // Try a connection without profile
       tls_infos = this._checkTLS(host, port);
-      return (await tls_infos.then(function(infos) {
+      return (await tls_infos.then(function() {
         // If can connect without certs
         return false;
       }).catch(function(error) {
-        console.log(error);
         return true;
       }));
     }

@@ -79,6 +79,21 @@ describe "HealthChecks working tests", ->
         data.should.be.a 'boolean'
         data.should.be.equal false
         
+    it 'Check port latency method', ->
+        data = await healthChecks.checkPortLatency( 'api.ipify.org', 443 )
+        data.should.be.a 'number'
+        data.should.be.above 0
+        
+    it 'Check port closed latency method', ->
+        data = await healthChecks.checkPortLatency( host, port+1 )
+        data.should.be.a 'number'
+        data.should.be.equal -1
+        
+    it 'Check remote peer certificate DN method', ->
+        data = await healthChecks.checkCertificateDN( host, port, 'client' )
+        data.should.be.a 'string'
+        data.should.be.equal 'C=FR,ST=.,L=.,O=ACME Signing Authority Inc,CN=localhost'
+    
     it 'Check remote peer certificate issuer (1 node) method', ->
         data = await healthChecks.checkCertificateIssuer( host, port, 'client' )
         data.should.be.a 'array'

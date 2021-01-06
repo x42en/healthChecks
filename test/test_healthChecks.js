@@ -90,6 +90,24 @@
       data.should.be.a('boolean');
       return data.should.be.equal(false);
     });
+    it('Check port latency method', async function() {
+      var data;
+      data = (await healthChecks.checkPortLatency('api.ipify.org', 443));
+      data.should.be.a('number');
+      return data.should.be.above(0);
+    });
+    it('Check port closed latency method', async function() {
+      var data;
+      data = (await healthChecks.checkPortLatency(host, port + 1));
+      data.should.be.a('number');
+      return data.should.be.equal(-1);
+    });
+    it('Check remote peer certificate DN method', async function() {
+      var data;
+      data = (await healthChecks.checkCertificateDN(host, port, 'client'));
+      data.should.be.a('string');
+      return data.should.be.equal('C=FR,ST=.,L=.,O=ACME Signing Authority Inc,CN=localhost');
+    });
     it('Check remote peer certificate issuer (1 node) method', async function() {
       var data;
       data = (await healthChecks.checkCertificateIssuer(host, port, 'client'));
@@ -146,3 +164,5 @@
   });
 
 }).call(this);
+
+//# sourceMappingURL=test_healthChecks.js.map
