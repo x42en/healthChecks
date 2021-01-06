@@ -150,18 +150,19 @@
       return data.should.be.equal(true);
     });
     return it('Check remote client authentication failed method', async function() {
-      var data, insecure_server;
-      // Instanciate test server TLSServer
-      insecure_server = new Server(host, port + 1, false);
-      insecure_server.start();
-      data = (await healthChecks.checkClientAuthentication(host, port + 1));
+      var data;
+      // # Instanciate test server TLSServer
+      // insecure_server = new Server(host, port+1, false)
+      // insecure_server.start()
+      data = (await healthChecks.checkClientAuthentication('api.ipify.org', 443));
       data.should.be.a('boolean');
-      data.should.be.equal(false);
-      
-      // Stop insecure server
-      return insecure_server.stop();
+      return data.should.be.equal(false);
     });
   });
+
+  
+  // Stop insecure server
+// insecure_server.stop()
 
 }).call(this);
 

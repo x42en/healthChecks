@@ -134,13 +134,13 @@ describe "HealthChecks working tests", ->
         data.should.be.equal true
     
     it 'Check remote client authentication failed method', ->
-        # Instanciate test server TLSServer
-        insecure_server = new Server(host, port+1, false)
-        insecure_server.start()
+        # # Instanciate test server TLSServer
+        # insecure_server = new Server(host, port+1, false)
+        # insecure_server.start()
         
-        data = await healthChecks.checkClientAuthentication( host, port+1 )
+        data = await healthChecks.checkClientAuthentication( 'api.ipify.org', 443 )
         data.should.be.a 'boolean'
         data.should.be.equal false
         
         # Stop insecure server
-        insecure_server.stop()
+        # insecure_server.stop()
