@@ -54,10 +54,7 @@
           var latency;
           // Auto close socket
           net_socket.end();
-          console.log("Socket connected");
-          console.log(now);
           latency = (new Date().getTime()) - now;
-          console.log(latency);
           return resolve(latency);
         });
       });
