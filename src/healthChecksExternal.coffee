@@ -69,7 +69,7 @@ module.exports = class HealthChecks
     
     # Execute web request upon host
     _request: (url, method, data, profile_name, json=false) ->
-        if method not in ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS']
+        if not method.toUpperCase() in ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS']
             throw 'Sorry, unsupported method'
 
         config = {

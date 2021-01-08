@@ -93,8 +93,8 @@
     
       // Execute web request upon host
     _request(url, method, data, profile_name, json = false) {
-      var config;
-      if (method !== 'GET' && method !== 'POST' && method !== 'PUT' && method !== 'DELETE' && method !== 'HEAD' && method !== 'OPTIONS') {
+      var config, ref;
+      if ((ref = !method.toUpperCase()) === 'GET' || ref === 'POST' || ref === 'PUT' || ref === 'DELETE' || ref === 'HEAD' || ref === 'OPTIONS') {
         throw 'Sorry, unsupported method';
       }
       config = {
