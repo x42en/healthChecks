@@ -69,6 +69,20 @@ describe "HealthChecks working tests", ->
         
         done()
     
+    it 'Check is profile set', (done) ->
+        result = healthChecks.isProfileSet('client')
+        result.should.be.a 'boolean'
+        result.should.be.equal true
+        
+        done()
+    
+    it 'Check is profile set failed', (done) ->
+        result = healthChecks.isProfileSet('test')
+        result.should.be.a 'boolean'
+        result.should.be.equal false
+        
+        done()
+    
     it 'Check port open method', ->
         data = await healthChecks.checkPortIsOpen( host, port )
         data.should.be.a 'boolean'

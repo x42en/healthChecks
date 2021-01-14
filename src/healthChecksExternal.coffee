@@ -1,6 +1,7 @@
 fs    = require 'fs'
 net   = require 'net'
 tls   = require 'tls'
+https = require 'https'
 axios = require 'axios'
 
 module.exports = class HealthChecks
@@ -12,6 +13,7 @@ module.exports = class HealthChecks
     addProfile: (name, keychain) ->
         try
             @config.profiles[name] = {
+                rejectUnauthorized: false
                 key: fs.readFileSync keychain.key
                 cert: fs.readFileSync keychain.cert
                 ca: fs.readFileSync keychain.ca
@@ -69,7 +71,7 @@ module.exports = class HealthChecks
     
     # Execute web request upon host
     _request: (url, method, data, profile_name, json=false) ->
-        if method not in ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS']
+        if not method.toUpperCase() in ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS']
             throw 'Sorry, unsupported method'
 
         config = {
@@ -81,15 +83,12 @@ module.exports = class HealthChecks
         }
 
         if profile_name of @config.profiles
-            config.key = @config.profiles[profile_name].key
-            config.cert = @config.profiles[profile_name].cert
-            config.cacert = @config.profiles[profile_name].ca
-        
+            config.httpsAgent = new https.Agent(@config.profiles[profile_name])
+            
         if data
             config.data = data
         
         return axios(config)
-        
 
     # Check if a service port is open
     # Return Boolean()
@@ -156,7 +155,7 @@ module.exports = class HealthChecks
         await api_infos.then (infos) ->
             return { status: infos.status, data: infos.data }
         .catch ( error ) ->
-            return null
+            return Error error
 
     # Return result of web page request
     checkWebPageContent: (url, profile_name=null) ->

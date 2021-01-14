@@ -78,6 +78,20 @@
       result.should.be.equal(true);
       return done();
     });
+    it('Check is profile set', function(done) {
+      var result;
+      result = healthChecks.isProfileSet('client');
+      result.should.be.a('boolean');
+      result.should.be.equal(true);
+      return done();
+    });
+    it('Check is profile set failed', function(done) {
+      var result;
+      result = healthChecks.isProfileSet('test');
+      result.should.be.a('boolean');
+      result.should.be.equal(false);
+      return done();
+    });
     it('Check port open method', async function() {
       var data;
       data = (await healthChecks.checkPortIsOpen(host, port));

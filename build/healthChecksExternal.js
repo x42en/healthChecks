@@ -1,5 +1,5 @@
 (function() {
-  var HealthChecks, axios, fs, net, tls,
+  var HealthChecks, axios, fs, https, net, tls,
     indexOf = [].indexOf;
 
   fs = require('fs');
@@ -7,6 +7,8 @@
   net = require('net');
 
   tls = require('tls');
+
+  https = require('https');
 
   axios = require('axios');
 
@@ -24,6 +26,7 @@
       var error;
       try {
         this.config.profiles[name] = {
+          rejectUnauthorized: false,
           key: fs.readFileSync(keychain.key),
           cert: fs.readFileSync(keychain.cert),
           ca: fs.readFileSync(keychain.ca)
@@ -93,8 +96,8 @@
     
       // Execute web request upon host
     _request(url, method, data, profile_name, json = false) {
-      var config;
-      if (method !== 'GET' && method !== 'POST' && method !== 'PUT' && method !== 'DELETE' && method !== 'HEAD' && method !== 'OPTIONS') {
+      var config, ref;
+      if ((ref = !method.toUpperCase()) === 'GET' || ref === 'POST' || ref === 'PUT' || ref === 'DELETE' || ref === 'HEAD' || ref === 'OPTIONS') {
         throw 'Sorry, unsupported method';
       }
       config = {
@@ -105,9 +108,7 @@
         }
       };
       if (profile_name in this.config.profiles) {
-        config.key = this.config.profiles[profile_name].key;
-        config.cert = this.config.profiles[profile_name].cert;
-        config.cacert = this.config.profiles[profile_name].ca;
+        config.httpsAgent = new https.Agent(this.config.profiles[profile_name]);
       }
       if (data) {
         config.data = data;
@@ -115,8 +116,7 @@
       return axios(config);
     }
 
-    
-      // Check if a service port is open
+    // Check if a service port is open
     // Return Boolean()
     async checkPortIsOpen(host, port) {
       var port_status;
@@ -210,7 +210,7 @@
           data: infos.data
         };
       }).catch(function(error) {
-        return null;
+        return Error(error);
       }));
     }
 
