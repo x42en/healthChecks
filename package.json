@@ -1,6 +1,6 @@
 {
   "name": "healthchecks-external",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Minimal server health checks framework",
   "main": "build/healthChecksExternal.js",
   "files": [
@@ -45,7 +45,7 @@
     "coffeescript": "^2.5.1",
     "mocha": "^8.2.1",
     "mocha-suppress-logs": "^0.2.0",
-    "snyk": "^1.437.3"
+    "snyk": "^1.437.4"
   },
   "snyk": true
 }
