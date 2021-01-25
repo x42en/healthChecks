@@ -1,6 +1,5 @@
 fs    = require 'fs'
 net   = require 'net'
-tls   = require 'tls'
 https = require 'https'
 axios = require 'axios'
 
@@ -46,29 +45,36 @@ module.exports = class HealthChecks
                 resolve(latency)
             )
     
-    # Retrieve remote peer certificate
-    _checkTLS: (host, port, profile_name) ->
+    # Retrieve remote peer certificate (supporting vhosts)
+    _checkHTTPS: (vhost, port, profile_name) ->
         return new Promise (resolve, reject) =>
-            config = { 
-                host: host
+            config = {
+                host: vhost
                 port: port
+                method: 'get'
+                path: '/'
+                agent: false
             }
+            secure = false
+
             if profile_name of @config.profiles
+                secure = true
                 config.key = @config.profiles[profile_name].key
                 config.cert = @config.profiles[profile_name].cert
                 config.ca = @config.profiles[profile_name].ca
-            
+
             cert = null
             isAuthorized = false
-            tlsSocket = tls.connect config, () =>
-                cert = tlsSocket.getPeerCertificate(true)
-                isAuthorized = tlsSocket.authorized
-                tlsSocket.end()
-                resolve { authorized: isAuthorized, certificate: cert }
-            .setEncoding 'utf8'
-            .on 'error', (error) =>
-                reject Error(error)
-    
+            req = https.request config, (res) =>
+                cert = res.connection.getPeerCertificate()
+                isAuthorized = res.connection.authorized
+                return resolve { authorized: isAuthorized, certificate: cert }
+            .on 'error', (err) =>
+                console.error("HTTPS Error: #{err.response.data}")
+                return reject(err.response.data)
+            
+            req.end()
+
     # Execute web request upon host
     _request: (url, method, data, profile_name, json=false) ->
         if not method.toUpperCase() in ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS']
@@ -93,88 +99,104 @@ module.exports = class HealthChecks
     # Check if a service port is open
     # Return Boolean()
     checkPortIsOpen: (host, port) ->
-        port_status = @_checkPort host, port
-        await port_status.then () ->
-            return true
-        .catch ( error ) ->
+        try
+            status = await @_checkPort host, port
+        catch err
             return false
-    
+
+        return Boolean(status)
+
     # Check latency of a service port
     # Return Number()
     checkPortLatency: (host, port) ->
-        port_status = @_checkPort host, port
-        await port_status.then (latency) ->
-            return latency
-        .catch ( error ) ->
+        try
+            latency = await @_checkPort host, port
+        catch err
             return -1
-
+        
+        return latency
+    
     # Gather remote peer certificate's DN
     checkCertificateDN: (host, port, profile_name=null) ->
-        tls_infos = @_checkTLS host, port, profile_name
-        await tls_infos.then (infos) ->
-            # Rebuild DN
+        try
             dn = ''
-            for k, v of infos.certificate.subject
+            # cert_infos = @_getCertificate host, port, profile_name
+            data = await @_checkHTTPS host, port, profile_name
+            # Rebuild DN
+            for k, v of data.certificate.subject
                 dn += "#{k}=#{v},"
-            
-            return dn.slice(0, -1)
-        .catch ( error ) ->
-            return Error error
+            dn = dn.slice(0, -1)
+        catch err
+            return new Error(err)
 
+        return dn
+    
     # Gather remote peer certificate's issuer
     checkCertificateIssuer: (host, port, profile_name=null) ->
-        tls_infos = @_checkTLS host, port, profile_name
-        await tls_infos.then (infos) ->
+        try
             issuers = []
-            
-            # Rebuild DN
             dn = ''
-            for k, v of infos.certificate.issuer
+            data = await @_checkHTTPS host, port, profile_name
+            console.log data
+            # Rebuild DN
+            for k, v of data.certificate.issuer
                 dn += "#{k}=#{v},"
-            
+            dn = dn.slice(0, -1)
             # Add issuer to list
-            if dn.slice(0, -1) not in issuers
-                issuers.push dn.slice(0, -1)
-            
-            return issuers
-        .catch ( error ) ->
-            return Error error
+            if dn not in issuers
+                issuers.push dn
+        catch err
+            return new Error(err)
+
+        return issuers
     
     # Gather remote peer certificate's expiration date
     checkCertificateExpiration: (host, port, profile_name=null) ->
-        tls_infos = @_checkTLS host, port, profile_name
-        await tls_infos.then (infos) ->
-            return infos.certificate.valid_to
-        .catch ( error ) ->
-            return Error error
+        try
+            data = await @_checkHTTPS host, port, profile_name
+            console.log data
+        catch err
+            return new Error(err)
+
+        return data.certificate.valid_to
     
+    # Gather remote peer certificate
+    checkRemoteCertificate: (host, port, profile_name=null) ->
+        try
+            data = await @_checkHTTPS host, port, profile_name
+        catch err
+            return new Error(err)
+        return data.certificate
+    
+    # Check if remote site has client authentication enforced
+    # return boolean()
+    checkClientAuthentication: (host, port, profile_name=null) ->
+        try
+            # Try a connection without profile
+            data = await @_checkHTTPS host, port, profile_name
+            return data.authorized
+        catch err
+            console.log "Authentication error: #{err}"
+            return true
+
     # Return result of API call in json
     checkAPICallContent: (url, method, data, profile_name=null) ->
         # Enable JSON flag
-        api_infos = @_request url, method, data, profile_name, true
-        await api_infos.then (infos) ->
-            return { status: infos.status, data: infos.data }
-        .catch ( error ) ->
-            return Error error
+        try
+            infos = await @_request url, method, data, profile_name, true
+        catch err
+            return new Error(err)
+
+        return { status: infos.status, data: infos.data }
 
     # Return result of web page request
     checkWebPageContent: (url, profile_name=null) ->
-        web_infos = @_request url, 'GET', null, profile_name
-        await web_infos.then (infos) ->
-            return { status: infos.status, data: infos.data }
-        .catch ( error ) ->
-            return null
+        try
+            infos = await @_request url, 'GET', null
+        catch err
+            return new Error(err)
 
-    # Check if remote site has client authentication enforced
-    # return boolean()
-    checkClientAuthentication: (host, port) ->
-        # Try a connection without profile
-        tls_infos = @_checkTLS host, port
-        await tls_infos.then (infos) ->
-            # Return if can connect without certs
-            return (not infos.authorized)
-        .catch ( error ) ->
-            return Error err
+        return { status: infos.status, data: infos.data }
 
     # Retrieve vulnerabilities based on app/version infos
     # Based on vulners.io service (use config for API key)

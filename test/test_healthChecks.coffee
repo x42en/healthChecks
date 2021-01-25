@@ -6,7 +6,8 @@ exec  = require('child_process').execSync
 suppressLogs = require 'mocha-suppress-logs'
 
 # Import test requirements
-Server  = require "#{__dirname}/tlsServer"
+HttpsServer  = require "#{__dirname}/httpsServer"
+
 Checker = require '../build/healthChecksExternal'
 
 # Allow self-signed for dev purpose
@@ -22,8 +23,8 @@ try
 catch error
     console.error "Unable to generate certificates: #{error}"
 
-# Instanciate test server TLSServer
-server = new Server(host, port)
+# Instanciate test server HTTPSServer
+https_server = new HttpsServer(host, port)
 
 # Add client profile
 client_keychain = {
@@ -52,14 +53,14 @@ describe "HealthChecks working tests", ->
     before( () ->
 
         # Start server
-        console.log "Start TLSServer"
-        server.start()
+        console.log "Start HTTPSServer"
+        https_server.start()
     )
 
     after( () ->
         # Stop server
-        console.log "Stop TLSServer"
-        server.stop()
+        console.log "Stop HTTPSServer"
+        https_server.stop()
     )
 
     it 'Check add profile', (done) ->
@@ -103,6 +104,11 @@ describe "HealthChecks working tests", ->
         data.should.be.a 'number'
         data.should.be.equal -1
         
+    it 'Check remote vhost certificate DN method', ->
+        data = await healthChecks.checkCertificateDN( host, port, null )
+        data.should.be.a 'string'
+        data.should.be.equal 'C=FR,ST=.,L=.,O=ACME Signing Authority Inc,CN=localhost'
+    
     it 'Check remote peer certificate DN method', ->
         data = await healthChecks.checkCertificateDN( host, port, 'client' )
         data.should.be.a 'string'
@@ -117,6 +123,31 @@ describe "HealthChecks working tests", ->
         data = await healthChecks.checkCertificateExpiration( host, port, 'client' )
         data.should.be.a 'string'
         data.should.be.equal server_expiration
+    
+    it 'Check remote peer certificate retrieval method', ->
+        raw = await healthChecks.checkRemoteCertificate( host, port, 'client' )
+        raw.should.be.an 'object'
+        # Rebuild standard object for mochai compliance
+        data = JSON.parse(JSON.stringify(raw))
+        data.subject.should.exist
+        data.issuer.should.exist
+        data.modulus.should.exist
+        data.exponent.should.exist
+        data.pubkey.should.exist
+        data.valid_from.should.exist
+        data.valid_to.should.exist
+        data.fingerprint.should.exist
+        data.serialNumber.should.exist
+    
+    it 'Check remote client authentication method', ->
+        data = await healthChecks.checkClientAuthentication( host, port, 'client' )
+        data.should.be.a 'boolean'
+        data.should.be.equal true
+    
+    it 'Check remote client authentication failed method', ->
+        data = await healthChecks.checkClientAuthentication( host, port )
+        data.should.be.a 'boolean'
+        data.should.be.equal false
     
     it 'Check API call method', ->
         data = await healthChecks.checkAPICallContent( 'https://my-json-server.typicode.com/x42en/healthchecks/posts/1', 'GET' )
@@ -133,7 +164,7 @@ describe "HealthChecks working tests", ->
         data.data.title.should.be.equal 'hello'
     
     it 'Check web page content method', ->
-        data = await healthChecks.checkWebPageContent( 'https://api.ipify.org/' )
+        data = await healthChecks.checkWebPageContent( "https://api.ipify.org/", 'client' )
         data.should.be.an 'object'
         data.should.have.deep.property 'status'
         data.should.have.deep.property 'data'
@@ -141,20 +172,3 @@ describe "HealthChecks working tests", ->
         data.status.should.be.equal 200
         data.data.should.be.a 'string'
         net.isIPv4(data.data).should.be.equal true
-
-    it 'Check remote client authentication method', ->
-        data = await healthChecks.checkClientAuthentication( host, port )
-        data.should.be.a 'boolean'
-        data.should.be.equal true
-    
-    it 'Check remote client authentication failed method', ->
-        # # Instanciate test server TLSServer
-        # insecure_server = new Server(host, port+1, false)
-        # insecure_server.start()
-        
-        data = await healthChecks.checkClientAuthentication( 'api.ipify.org', 443 )
-        data.should.be.a 'boolean'
-        data.should.be.equal false
-        
-        # Stop insecure server
-        # insecure_server.stop()

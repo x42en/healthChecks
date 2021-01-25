@@ -1,12 +1,10 @@
 (function() {
-  var HealthChecks, axios, fs, https, net, tls,
+  var HealthChecks, axios, fs, https, net,
     indexOf = [].indexOf;
 
   fs = require('fs');
 
   net = require('net');
-
-  tls = require('tls');
 
   https = require('https');
 
@@ -64,37 +62,42 @@
     }
 
     
-      // Retrieve remote peer certificate
-    _checkTLS(host, port, profile_name) {
+      // Retrieve remote peer certificate (supporting vhosts)
+    _checkHTTPS(vhost, port, profile_name) {
       return new Promise((resolve, reject) => {
-        var cert, config, isAuthorized, tlsSocket;
+        var cert, config, isAuthorized, req, secure;
         config = {
-          host: host,
-          port: port
+          host: vhost,
+          port: port,
+          method: 'get',
+          path: '/',
+          agent: false
         };
+        secure = false;
         if (profile_name in this.config.profiles) {
+          secure = true;
           config.key = this.config.profiles[profile_name].key;
           config.cert = this.config.profiles[profile_name].cert;
           config.ca = this.config.profiles[profile_name].ca;
         }
         cert = null;
         isAuthorized = false;
-        return tlsSocket = tls.connect(config, () => {
-          cert = tlsSocket.getPeerCertificate(true);
-          isAuthorized = tlsSocket.authorized;
-          tlsSocket.end();
+        req = https.request(config, (res) => {
+          cert = res.connection.getPeerCertificate();
+          isAuthorized = res.connection.authorized;
           return resolve({
             authorized: isAuthorized,
             certificate: cert
           });
-        }).setEncoding('utf8').on('error', (error) => {
-          return reject(Error(error));
+        }).on('error', (err) => {
+          console.error(`HTTPS Error: ${err.response.data}`);
+          return reject(err.response.data);
         });
+        return req.end();
       });
     }
 
-    
-      // Execute web request upon host
+    // Execute web request upon host
     _request(url, method, data, profile_name, json = false) {
       var config, ref;
       if ((ref = !method.toUpperCase()) === 'GET' || ref === 'POST' || ref === 'PUT' || ref === 'DELETE' || ref === 'HEAD' || ref === 'OPTIONS') {
@@ -119,127 +122,150 @@
     // Check if a service port is open
     // Return Boolean()
     async checkPortIsOpen(host, port) {
-      var port_status;
-      port_status = this._checkPort(host, port);
-      return (await port_status.then(function() {
-        return true;
-      }).catch(function(error) {
+      var err, status;
+      try {
+        status = (await this._checkPort(host, port));
+      } catch (error1) {
+        err = error1;
         return false;
-      }));
+      }
+      return Boolean(status);
+    }
+
+    // Check latency of a service port
+    // Return Number()
+    async checkPortLatency(host, port) {
+      var err, latency;
+      try {
+        latency = (await this._checkPort(host, port));
+      } catch (error1) {
+        err = error1;
+        return -1;
+      }
+      return latency;
     }
 
     
-      // Check latency of a service port
-    // Return Number()
-    async checkPortLatency(host, port) {
-      var port_status;
-      port_status = this._checkPort(host, port);
-      return (await port_status.then(function(latency) {
-        return latency;
-      }).catch(function(error) {
-        return -1;
-      }));
-    }
-
-    // Gather remote peer certificate's DN
+      // Gather remote peer certificate's DN
     async checkCertificateDN(host, port, profile_name = null) {
-      var tls_infos;
-      tls_infos = this._checkTLS(host, port, profile_name);
-      return (await tls_infos.then(function(infos) {
-        var dn, k, ref, v;
-        // Rebuild DN
+      var data, dn, err, k, ref, v;
+      try {
         dn = '';
-        ref = infos.certificate.subject;
+        // cert_infos = @_getCertificate host, port, profile_name
+        data = (await this._checkHTTPS(host, port, profile_name));
+        ref = data.certificate.subject;
+        // Rebuild DN
         for (k in ref) {
           v = ref[k];
           dn += `${k}=${v},`;
         }
-        return dn.slice(0, -1);
-      }).catch(function(error) {
-        return Error(error);
-      }));
+        dn = dn.slice(0, -1);
+      } catch (error1) {
+        err = error1;
+        return new Error(err);
+      }
+      return dn;
     }
 
-    // Gather remote peer certificate's issuer
+    
+      // Gather remote peer certificate's issuer
     async checkCertificateIssuer(host, port, profile_name = null) {
-      var tls_infos;
-      tls_infos = this._checkTLS(host, port, profile_name);
-      return (await tls_infos.then(function(infos) {
-        var dn, issuers, k, ref, ref1, v;
+      var data, dn, err, issuers, k, ref, v;
+      try {
         issuers = [];
-        
-        // Rebuild DN
         dn = '';
-        ref = infos.certificate.issuer;
+        data = (await this._checkHTTPS(host, port, profile_name));
+        console.log(data);
+        ref = data.certificate.issuer;
+        // Rebuild DN
         for (k in ref) {
           v = ref[k];
           dn += `${k}=${v},`;
         }
-        
+        dn = dn.slice(0, -1);
         // Add issuer to list
-        if (ref1 = dn.slice(0, -1), indexOf.call(issuers, ref1) < 0) {
-          issuers.push(dn.slice(0, -1));
+        if (indexOf.call(issuers, dn) < 0) {
+          issuers.push(dn);
         }
-        return issuers;
-      }).catch(function(error) {
-        return Error(error);
-      }));
+      } catch (error1) {
+        err = error1;
+        return new Error(err);
+      }
+      return issuers;
     }
 
     
       // Gather remote peer certificate's expiration date
     async checkCertificateExpiration(host, port, profile_name = null) {
-      var tls_infos;
-      tls_infos = this._checkTLS(host, port, profile_name);
-      return (await tls_infos.then(function(infos) {
-        return infos.certificate.valid_to;
-      }).catch(function(error) {
-        return Error(error);
-      }));
+      var data, err;
+      try {
+        data = (await this._checkHTTPS(host, port, profile_name));
+        console.log(data);
+      } catch (error1) {
+        err = error1;
+        return new Error(err);
+      }
+      return data.certificate.valid_to;
     }
 
     
-      // Return result of API call in json
+      // Gather remote peer certificate
+    async checkRemoteCertificate(host, port, profile_name = null) {
+      var data, err;
+      try {
+        data = (await this._checkHTTPS(host, port, profile_name));
+      } catch (error1) {
+        err = error1;
+        return new Error(err);
+      }
+      return data.certificate;
+    }
+
+    
+      // Check if remote site has client authentication enforced
+    // return boolean()
+    async checkClientAuthentication(host, port, profile_name = null) {
+      var data, err;
+      try {
+        // Try a connection without profile
+        data = (await this._checkHTTPS(host, port, profile_name));
+        return data.authorized;
+      } catch (error1) {
+        err = error1;
+        console.log(`Authentication error: ${err}`);
+        return true;
+      }
+    }
+
+    // Return result of API call in json
     async checkAPICallContent(url, method, data, profile_name = null) {
-      var api_infos;
-      // Enable JSON flag
-      api_infos = this._request(url, method, data, profile_name, true);
-      return (await api_infos.then(function(infos) {
-        return {
-          status: infos.status,
-          data: infos.data
-        };
-      }).catch(function(error) {
-        return Error(error);
-      }));
+      var err, infos;
+      try {
+        // Enable JSON flag
+        infos = (await this._request(url, method, data, profile_name, true));
+      } catch (error1) {
+        err = error1;
+        return new Error(err);
+      }
+      return {
+        status: infos.status,
+        data: infos.data
+      };
     }
 
     // Return result of web page request
     async checkWebPageContent(url, profile_name = null) {
-      var web_infos;
-      web_infos = this._request(url, 'GET', null, profile_name);
-      return (await web_infos.then(function(infos) {
-        return {
-          status: infos.status,
-          data: infos.data
-        };
-      }).catch(function(error) {
-        return null;
-      }));
-    }
-
-    // Check if remote site has client authentication enforced
-    // return boolean()
-    async checkClientAuthentication(host, port) {
-      var tls_infos;
-      // Try a connection without profile
-      tls_infos = this._checkTLS(host, port);
-      return (await tls_infos.then(function(infos) {
-        // Return if can connect without certs
-        return !infos.authorized;
-      }).catch(function(error) {
-        return Error(err);
-      }));
+      var err, infos;
+      try {
+        infos = (await this._request(url, 'GET', null));
+      } catch (error1) {
+        err = error1;
+        return new Error(err);
+      }
+      return {
+        status: infos.status,
+        data: infos.data
+      };
     }
 
     // Retrieve vulnerabilities based on app/version infos

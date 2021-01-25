@@ -1,6 +1,6 @@
 (function() {
   // Import required packages
-  var Checker, Server, chai, client_keychain, error, exec, healthChecks, host, net, port, raw, server, server_expiration, shoud, suppressLogs;
+  var Checker, HttpsServer, chai, client_keychain, error, exec, healthChecks, host, https_server, net, port, raw, server_expiration, shoud, suppressLogs;
 
   net = require('net');
 
@@ -13,7 +13,7 @@
   suppressLogs = require('mocha-suppress-logs');
 
   // Import test requirements
-  Server = require(`${__dirname}/tlsServer`);
+  HttpsServer = require(`${__dirname}/httpsServer`);
 
   Checker = require('../build/healthChecksExternal');
 
@@ -33,8 +33,8 @@
     console.error(`Unable to generate certificates: ${error}`);
   }
 
-  // Instanciate test server TLSServer
-  server = new Server(host, port);
+  // Instanciate test server HTTPSServer
+  https_server = new HttpsServer(host, port);
 
   // Add client profile
   client_keychain = {
@@ -63,13 +63,13 @@
     this.timeout(4000);
     before(function() {
       // Start server
-      console.log("Start TLSServer");
-      return server.start();
+      console.log("Start HTTPSServer");
+      return https_server.start();
     });
     after(function() {
       // Stop server
-      console.log("Stop TLSServer");
-      return server.stop();
+      console.log("Stop HTTPSServer");
+      return https_server.stop();
     });
     it('Check add profile', function(done) {
       var result;
@@ -116,6 +116,12 @@
       data.should.be.a('number');
       return data.should.be.equal(-1);
     });
+    it('Check remote vhost certificate DN method', async function() {
+      var data;
+      data = (await healthChecks.checkCertificateDN(host, port, null));
+      data.should.be.a('string');
+      return data.should.be.equal('C=FR,ST=.,L=.,O=ACME Signing Authority Inc,CN=localhost');
+    });
     it('Check remote peer certificate DN method', async function() {
       var data;
       data = (await healthChecks.checkCertificateDN(host, port, 'client'));
@@ -134,6 +140,34 @@
       data.should.be.a('string');
       return data.should.be.equal(server_expiration);
     });
+    it('Check remote peer certificate retrieval method', async function() {
+      var data;
+      raw = (await healthChecks.checkRemoteCertificate(host, port, 'client'));
+      raw.should.be.an('object');
+      // Rebuild standard object for mochai compliance
+      data = JSON.parse(JSON.stringify(raw));
+      data.subject.should.exist;
+      data.issuer.should.exist;
+      data.modulus.should.exist;
+      data.exponent.should.exist;
+      data.pubkey.should.exist;
+      data.valid_from.should.exist;
+      data.valid_to.should.exist;
+      data.fingerprint.should.exist;
+      return data.serialNumber.should.exist;
+    });
+    it('Check remote client authentication method', async function() {
+      var data;
+      data = (await healthChecks.checkClientAuthentication(host, port, 'client'));
+      data.should.be.a('boolean');
+      return data.should.be.equal(true);
+    });
+    it('Check remote client authentication failed method', async function() {
+      var data;
+      data = (await healthChecks.checkClientAuthentication(host, port));
+      data.should.be.a('boolean');
+      return data.should.be.equal(false);
+    });
     it('Check API call method', async function() {
       var data;
       data = (await healthChecks.checkAPICallContent('https://my-json-server.typicode.com/x42en/healthchecks/posts/1', 'GET'));
@@ -147,9 +181,9 @@
       data.data.id.should.be.equal(1);
       return data.data.title.should.be.equal('hello');
     });
-    it('Check web page content method', async function() {
+    return it('Check web page content method', async function() {
       var data;
-      data = (await healthChecks.checkWebPageContent('https://api.ipify.org/'));
+      data = (await healthChecks.checkWebPageContent("https://api.ipify.org/", 'client'));
       data.should.be.an('object');
       data.should.have.deep.property('status');
       data.should.have.deep.property('data');
@@ -157,26 +191,7 @@
       data.data.should.be.a('string');
       return net.isIPv4(data.data).should.be.equal(true);
     });
-    it('Check remote client authentication method', async function() {
-      var data;
-      data = (await healthChecks.checkClientAuthentication(host, port));
-      data.should.be.a('boolean');
-      return data.should.be.equal(true);
-    });
-    return it('Check remote client authentication failed method', async function() {
-      var data;
-      // # Instanciate test server TLSServer
-      // insecure_server = new Server(host, port+1, false)
-      // insecure_server.start()
-      data = (await healthChecks.checkClientAuthentication('api.ipify.org', 443));
-      data.should.be.a('boolean');
-      return data.should.be.equal(false);
-    });
   });
-
-  
-  // Stop insecure server
-// insecure_server.stop()
 
 }).call(this);
 

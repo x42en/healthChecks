@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "httpsServer.js",
+  "sourceRoot": "..",
+  "sources": [
+    "test/httpsServer.coffee"
+  ],
+  "names": [],
+  "mappings": "AAA0B;EAAA;AAAA,MAAA,WAAA,EAAA,EAAA,EAAA,KAAA,EAAA;;EAC1B,EAAA,GAAQ,OAAA,CAAQ,IAAR;;EACR,GAAA,GAAQ,OAAA,CAAQ,KAAR;;EACR,KAAA,GAAQ,OAAA,CAAQ,OAAR;;EAER,MAAM,CAAC,OAAP,GAAuB,cAAN,MAAA,YAAA;IACb,WAAa,CAAC,IAAD,EAAO,IAAP,EAAa,SAAO,KAApB,CAAA;MACT,IAAC,CAAA,OAAD,GAAW;QACP,IAAA,EAAM,IADC;QAEP,IAAA,EAAM,IAFC;QAIP,GAAA,EAAK,EAAE,CAAC,YAAH,CAAgB,CAAA,CAAA,CAAG,SAAH,CAAA,wBAAA,CAAhB,CAJE;QAKP,IAAA,EAAM,EAAE,CAAC,YAAH,CAAgB,CAAA,CAAA,CAAG,SAAH,CAAA,wBAAA,CAAhB,CALC;QAMP,EAAA,EAAI,CAAC,EAAE,CAAC,YAAH,CAAgB,CAAA,CAAA,CAAG,SAAH,CAAA,gBAAA,CAAhB,CAAD,CANG;QAQP,WAAA,EAAa,MARN;QASP,kBAAA,EAAoB,KATb;MAAA;IADF;;IAab,IAAM,CAAC,GAAD,EAAM,GAAN,CAAA;AACV,UAAA;MAAQ,IAAA,GAAO,GAAG,CAAC,MAAM,CAAC,kBAAX,CAAA;MACP,IAAG,CAAI,GAAG,CAAC,MAAM,CAAC,UAAlB;;QAEI,OAAO,CAAC,GAAR,CAAY,qBAAZ;QACA,GAAG,CAAC,SAAJ,CAAc,GAAd;eACA,GAAG,CAAC,GAAJ,CAAQ,cAAR,EAJJ;OAAA,MAAA;QAMI,OAAO,CAAC,GAAR,CAAY,mBAAZ;QACA,GAAG,CAAC,SAAJ,CAAc,GAAd,EAAmB;UAAC,cAAA,EAAgB;QAAjB,CAAnB;eACA,GAAG,CAAC,GAAJ,CAAQ,aAAR,EARJ;;IAFE;;IAYN,KAAO,CAAA,CAAA;MACH,IAAC,CAAA,MAAD,GAAU,KAAK,CAAC,YAAN,CAAmB,IAAC,CAAA,OAApB,EAA6B,IAAC,CAAA,IAA9B;aACV,IAAC,CAAA,MAAM,CAAC,MAAR,CAAe,IAAC,CAAA,OAAO,CAAC,IAAxB;IAFG;;IAIP,IAAM,CAAA,CAAA;aACF,IAAC,CAAA,MAAM,CAAC,KAAR,CAAA;IADE;;EA9BO;AALS",
+  "sourcesContent": [
+    "# Import required packages\nfs    = require 'fs'\ntls   = require 'tls'\nhttps = require 'https'\n\nmodule.exports = class HTTPSServer\n    constructor: (host, port, secure=false)->\n        @options = {\n            host: host\n            port: port\n\n            key: fs.readFileSync(\"#{__dirname}/certs/server/server.key\")\n            cert: fs.readFileSync(\"#{__dirname}/certs/server/server.crt\")\n            ca: [fs.readFileSync(\"#{__dirname}/certs/ca/ca.crt\")]\n            \n            requestCert: secure, # Ask for a client cert\n            rejectUnauthorized: false # Act on unauthorized clients at the app level\n        }\n    \n    _app: (req, res) ->\n        cert = req.socket.getPeerCertificate()\n        if not req.client.authorized\n            # err = \"Sorry #{cert.subject.CN}, certificates from #{cert.issuer.CN} are not welcome here.\"\n            console.log \"CLIENT UNAUTHORIZED\"\n            res.writeHead 401\n            res.end \"UNAUTHORIZED\"\n        else\n            console.log \"CLIENT AUTHORIZED\"\n            res.writeHead 200, {'Content-Type': 'text/plain'}\n            res.end \"welcome! \\n\"\n    \n    start: ->\n        @server = https.createServer @options, @_app    \n        @server.listen @options.port\n    \n    stop: ->\n        @server.close()"
+  ]
+}
