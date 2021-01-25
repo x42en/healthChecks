@@ -125,10 +125,10 @@ describe "HealthChecks working tests", ->
         data.should.be.equal server_expiration
     
     it 'Check remote peer certificate retrieval method', ->
-        data = await healthChecks.checkRemoteCertificate( host, port, 'client' )
-        data.should.be.an 'object'
+        raw = await healthChecks.checkRemoteCertificate( host, port, 'client' )
+        raw.should.be.an 'object'
         # Rebuild standard object for mochai compliance
-        data = JSON.parse(JSON.stringify(data))
+        data = JSON.parse(JSON.stringify(raw))
         data.subject.should.exist
         data.issuer.should.exist
         data.bits.should.exist
