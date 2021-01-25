@@ -126,6 +126,7 @@ describe "HealthChecks working tests", ->
     
     it 'Check remote peer certificate retrieval method', ->
         raw = await healthChecks.checkRemoteCertificate( host, port, 'client' )
+        console.log raw
         raw.should.be.an 'object'
         # Rebuild standard object for mochai compliance
         data = JSON.parse(JSON.stringify(raw))

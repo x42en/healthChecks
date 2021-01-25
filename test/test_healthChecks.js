@@ -143,6 +143,7 @@
     it('Check remote peer certificate retrieval method', async function() {
       var data;
       raw = (await healthChecks.checkRemoteCertificate(host, port, 'client'));
+      console.log(raw);
       raw.should.be.an('object');
       // Rebuild standard object for mochai compliance
       data = JSON.parse(JSON.stringify(raw));
