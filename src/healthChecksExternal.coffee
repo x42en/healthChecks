@@ -27,23 +27,28 @@ module.exports = class HealthChecks
 
     # Check if remote port is open
     _checkPort: (host, port) ->
-        return new Promise (resolve, reject) =>
+        promise = new Promise (resolve, reject) =>
             # Check port is reachable
             net_socket = net.Socket()
-            now = new Date().getTime()
-            onError = () =>
+            
+            onError = (err) =>
                 net_socket.destroy()
-                reject Error host
+                reject(new Error "#{host}:#{port} is unreachable: #{err}")
 
             net_socket.setTimeout(1000)
-            .once('error', onError)
-            .once('timeout', onError)
-            .connect( port, host, () =>
+            net_socket.once('error', onError)
+            net_socket.once('timeout', onError)
+            
+            net_socket.connect( port, host, () =>
                 # Auto close socket
                 net_socket.end()
-                latency = (new Date().getTime()) - now
-                resolve(latency)
+                resolve()
             )
+        try
+            await promise
+            return true
+        catch
+            return false
     
     # Retrieve remote peer certificate (supporting vhosts)
     _checkHTTPS: (vhost, port, profile_name) ->
@@ -69,9 +74,8 @@ module.exports = class HealthChecks
                 cert = res.connection.getPeerCertificate()
                 isAuthorized = res.connection.authorized
                 return resolve { authorized: isAuthorized, certificate: cert }
-            .on 'error', (err) =>
-                console.error("HTTPS Error: #{err.response.data}")
-                return reject(err.response.data)
+            req.on 'error', (err) =>
+                return reject(err.message)
             
             req.end()
 
@@ -99,21 +103,21 @@ module.exports = class HealthChecks
     # Check if a service port is open
     # Return Boolean()
     checkPortIsOpen: (host, port) ->
-        try
-            status = await @_checkPort host, port
-        catch err
-            return false
-
-        return Boolean(status)
+        return await @_checkPort host, port
 
     # Check latency of a service port
     # Return Number()
     checkPortLatency: (host, port) ->
         try
-            latency = await @_checkPort host, port
+            now = new Date().getTime()
+            is_open = await @_checkPort host, port
+            if not is_open
+                throw new Error('port closed')
         catch err
             return -1
         
+        # Calculate latency
+        latency = (new Date().getTime()) - now
         return latency
     
     # Gather remote peer certificate's DN
@@ -137,7 +141,6 @@ module.exports = class HealthChecks
             issuers = []
             dn = ''
             data = await @_checkHTTPS host, port, profile_name
-            console.log data
             # Rebuild DN
             for k, v of data.certificate.issuer
                 dn += "#{k}=#{v},"
@@ -154,7 +157,6 @@ module.exports = class HealthChecks
     checkCertificateExpiration: (host, port, profile_name=null) ->
         try
             data = await @_checkHTTPS host, port, profile_name
-            console.log data
         catch err
             return new Error(err)
 
