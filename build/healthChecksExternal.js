@@ -41,24 +41,31 @@
     }
 
     // Check if remote port is open
-    _checkPort(host, port) {
-      return new Promise((resolve, reject) => {
-        var net_socket, now, onError;
+    async _checkPort(host, port) {
+      var promise;
+      promise = new Promise((resolve, reject) => {
+        var net_socket, onError;
         // Check port is reachable
         net_socket = net.Socket();
-        now = new Date().getTime();
-        onError = () => {
+        onError = (err) => {
           net_socket.destroy();
-          return reject(Error(host));
+          return reject(new Error(`${host}:${port} is unreachable: ${err}`));
         };
-        return net_socket.setTimeout(1000).once('error', onError).once('timeout', onError).connect(port, host, () => {
-          var latency;
+        net_socket.setTimeout(1000);
+        net_socket.once('error', onError);
+        net_socket.once('timeout', onError);
+        return net_socket.connect(port, host, () => {
           // Auto close socket
           net_socket.end();
-          latency = (new Date().getTime()) - now;
-          return resolve(latency);
+          return resolve();
         });
       });
+      try {
+        await promise;
+        return true;
+      } catch (error1) {
+        return false;
+      }
     }
 
     
@@ -89,9 +96,9 @@
             authorized: isAuthorized,
             certificate: cert
           });
-        }).on('error', (err) => {
-          console.error(`HTTPS Error: ${err.response.data}`);
-          return reject(err.response.data);
+        });
+        req.on('error', (err) => {
+          return reject(err.message);
         });
         return req.end();
       });
@@ -122,26 +129,26 @@
     // Check if a service port is open
     // Return Boolean()
     async checkPortIsOpen(host, port) {
-      var err, status;
-      try {
-        status = (await this._checkPort(host, port));
-      } catch (error1) {
-        err = error1;
-        return false;
-      }
-      return Boolean(status);
+      return (await this._checkPort(host, port));
     }
 
     // Check latency of a service port
     // Return Number()
     async checkPortLatency(host, port) {
-      var err, latency;
+      var err, is_open, latency, now;
       try {
-        latency = (await this._checkPort(host, port));
+        now = new Date().getTime();
+        is_open = (await this._checkPort(host, port));
+        if (!is_open) {
+          throw new Error('port closed');
+        }
       } catch (error1) {
         err = error1;
         return -1;
       }
+      
+      // Calculate latency
+      latency = (new Date().getTime()) - now;
       return latency;
     }
 
@@ -175,7 +182,6 @@
         issuers = [];
         dn = '';
         data = (await this._checkHTTPS(host, port, profile_name));
-        console.log(data);
         ref = data.certificate.issuer;
         // Rebuild DN
         for (k in ref) {
@@ -200,7 +206,6 @@
       var data, err;
       try {
         data = (await this._checkHTTPS(host, port, profile_name));
-        console.log(data);
       } catch (error1) {
         err = error1;
         return new Error(err);
