@@ -43,7 +43,7 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "coffeescript": "^2.5.1",
-    "mocha": "^8.2.1",
+    "mocha": "^10.1.0",
     "mocha-suppress-logs": "^0.2.0",
     "snyk": "^1.439.1"
   },
