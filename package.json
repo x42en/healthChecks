@@ -10,6 +10,8 @@
     "test": "test"
   },
   "scripts": {
+    "prepare": "npm run snyk-protect",
+    "snyk-protect": "snyk-protect",
     "build": "$(npm bin)/coffee --no-header --map --output build/ --compile src/",
     "test": "$(npm bin)/coffee --no-header --map --compile test/ && $(npm bin)/mocha -v --exit",
     "prepublish": "npm run snyk-protect",
@@ -40,6 +42,7 @@
     "axios": "^1.3.3"
   },
   "devDependencies": {
+    "@snyk/protect": "^1.1105.0",
     "chai": "^4.3.7",
     "coffeescript": "^2.7.0",
     "mocha": "^10.2.0"
