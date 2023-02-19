@@ -14,7 +14,6 @@
     "snyk-protect": "snyk-protect",
     "build": "$(npm bin)/coffee --no-header --map --output build/ --compile src/",
     "test": "$(npm bin)/coffee --no-header --map --compile test/ && $(npm bin)/mocha -v --exit",
-    "prepublish": "npm run snyk-protect",
     "gpr-setup": "node scripts/gpr.js"
   },
   "repository": {
