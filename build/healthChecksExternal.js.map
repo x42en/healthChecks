@@ -1,7 +1,7 @@
 {
   "version": 3,
   "file": "healthChecksExternal.js",
-  "sourceRoot": "..",
+  "sourceRoot": "../",
   "sources": [
     "src/healthChecksExternal.coffee"
   ],
