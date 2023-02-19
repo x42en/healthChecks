@@ -7,7 +7,9 @@
 [![Build Status](https://travis-ci.org/x42en/healthchecks-external.svg?branch=master)](https://travis-ci.org/x42en/healthchecks-external)
 [![Known Vulnerabilities](https://snyk.io/test/github/x42en/healthchecks-external/badge.svg)](https://snyk.io/test/github/x42en/healthchecks-external)
 
+[[_TOC_]]
 
+---
 
 ## Install
 
@@ -66,48 +68,48 @@ A profile object is composed with:
 - ca: the certificate authority path  
 ```
 
-**Args:** `name` (string), `profile` (object) 
-**Return:** boolean
+- **Args:** `name` (string), `profile` (object) 
+- **Return:** boolean
 
 ### checkPortIsOpen
 Verify that a remote TCP port is open.  
-**Args:** `host` (string), `port` (number)  
-**Return:** boolean
+- **Args:** `host` (string), `port` (number)  
+- **Return:** boolean
 
 ### checkPortLatency
 Verify latency of a remote TCP port (in ms).  
-**Args:** `host` (string), `port` (number)  
-**Return:** boolean
+- **Args:** `host` (string), `port` (number)  
+- **Return:** boolean
 
 ### checkCertificateDN
 Verify DN of remote peer certificate.  
-**Args:** `host` (string), `port` (number) [, `profile_name` (string)] 
-**Return:** array of `issuer` (string)
+- **Args:** `host` (string), `port` (number) [, `profile_name` (string)] 
+- **Return:** array of `issuer` (string)
 
 ### checkCertificateIssuer
 Verify ~~complete~~ chain of remote peer certificate issuers.  
-**Args:** `host` (string), `port` (number) [, `profile_name` (string)] 
-**Return:** array of `issuer` (string)
+- **Args:** `host` (string), `port` (number) [, `profile_name` (string)] 
+- **Return:** array of `issuer` (string)
 
 ### checkCertificateExpiration
 Verify remote peer certificate expiration date.  
-**Args:** `host` (string), `port` (number) [, `profile_name` (string)] 
-**Return:** expiration_date (string)
+- **Args:** `host` (string), `port` (number) [, `profile_name` (string)] 
+- **Return:** expiration_date (string)
 
 ### checkAPICallContent
 Verify API call (using JSON POST method by default).  
-**Args:** `url` (string), `method` (string) [, `profile_name` (string)] 
-**Return:** answer (object) {status: 'status_code', data: data}
+- **Args:** `url` (string), `method` (string) [, `profile_name` (string)] 
+- **Return:** answer (object) {status: 'status_code', data: data}
 
 ### checkWebPageContent
 Verify Web page content (using GET method by default).  
-**Args:** `url` (string), `method` (string) [, `profile_name` (string)] 
-**Return:** answer (object) {status: 'status_code', data: data}
+- **Args:** `url` (string), `method` (string) [, `profile_name` (string)] 
+- **Return:** answer (object) {status: 'status_code', data: data}
 
 ### checkClientAuthentication
 Verify remote server is enforcing client authentication or not.  
-**Args:** `host` (string), `port` (number)  
-**Return:** boolean
+- **Args:** `host` (string), `port` (number)  
+- **Return:** boolean
 
 ## Developers
 
@@ -137,9 +139,9 @@ npm run build
 The NPM publishing is automated, just merge PR from develop into master in order to publish corresponding package in NPM and GitHub repositories.
 
 ## TODO
-* write better doc
-* support full certificate chain validation of issuers
-* add UDP support
-* add vulners check
-* add some crazy checks
-* unittests vulners check
+- [ ] write better doc
+- [ ] support full certificate chain validation of issuers
+- [ ] add UDP support
+- [ ] add vulners check
+- [ ] add some crazy checks
+- [ ] unittests vulners check
