@@ -3,7 +3,6 @@ net   = require 'net'
 chai  = require 'chai'
 shoud = chai.should()
 exec  = require('child_process').execSync
-suppressLogs = require 'mocha-suppress-logs'
 
 # Import test requirements
 HttpsServer  = require "#{__dirname}/httpsServer"
@@ -44,9 +43,6 @@ catch error
 ###################### UNIT TESTS ##########################
 describe "HealthChecks working tests", ->
 
-    # Remove output
-    suppressLogs()
-    
     # Set global timeout
     @timeout 4000
 

@@ -1,6 +1,6 @@
 (function() {
   // Import required packages
-  var Checker, HttpsServer, chai, client_keychain, error, exec, healthChecks, host, https_server, net, port, raw, server_expiration, shoud, suppressLogs;
+  var Checker, HttpsServer, chai, client_keychain, error, exec, healthChecks, host, https_server, net, port, raw, server_expiration, shoud;
 
   net = require('net');
 
@@ -9,8 +9,6 @@
   shoud = chai.should();
 
   exec = require('child_process').execSync;
-
-  suppressLogs = require('mocha-suppress-logs');
 
   // Import test requirements
   HttpsServer = require(`${__dirname}/httpsServer`);
@@ -56,9 +54,6 @@
 
   //##################### UNIT TESTS ##########################
   describe("HealthChecks working tests", function() {
-    // Remove output
-    suppressLogs();
-    
     // Set global timeout
     this.timeout(4000);
     before(function() {

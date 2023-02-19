@@ -1,7 +1,7 @@
 {
   "version": 3,
   "file": "httpsServer.js",
-  "sourceRoot": "..",
+  "sourceRoot": "../",
   "sources": [
     "test/httpsServer.coffee"
   ],
