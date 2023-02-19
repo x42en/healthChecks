@@ -1,5 +1,5 @@
 ####################################################
-#         healthChecksExternal - v1.2.1            #
+#         healthChecksExternal - v1.2.2            #
 #                                                  #
 #        External Health Checks made easy          #
 ####################################################
@@ -24,7 +24,7 @@
 # limitations under the License.
 
 # Set global vars
-VERSION    = '1.2.1'
+VERSION    = '1.2.2'
 
 fs    = require 'fs'
 net   = require 'net'
