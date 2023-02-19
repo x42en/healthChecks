@@ -1,6 +1,6 @@
 {
   "name": "healthchecks-external",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Minimal server health checks framework",
   "main": "build/healthChecksExternal.js",
   "files": [
