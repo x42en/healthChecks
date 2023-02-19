@@ -1,6 +1,6 @@
 (function() {
   //###################################################
-  //         healthChecksExternal - v1.2.0            #
+  //         healthChecksExternal - v1.2.1            #
   //                                                  #
   //        External Health Checks made easy          #
   //###################################################
@@ -28,7 +28,7 @@
   var HealthChecks, VERSION, axios, fs, https, net,
     indexOf = [].indexOf;
 
-  VERSION = '1.2.0';
+  VERSION = '1.2.1';
 
   fs = require('fs');
 
